@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cadastro escolar</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        
+        #form-endereco {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            width: 100%;
+            max-width: 450px;
+            box-sizing: border-box;
+        }
+        
+        .campo {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .campo label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 6px;
+        }
+        
+        .campo input {
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 15px;
+            color: #334155;
+            transition: all 0.3s ease;
+            background-color: #fff;
+        }
+        
+        .campo input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+        
+        .campo input:read-only {
+            background-color: #f1f5f9;
+            color: #64748b;
+            border-color: #e2e8f0;
+            cursor: not-allowed;
+        }
+        
+        button[type="submit"] {
+            width: 100%;
+            padding: 14px;
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            margin-top: 10px;
+        }
+        
+        button[type="submit"]:hover {
+            background-color: #2563eb;
+        }
+        
+        button[type="submit"]:active {
+            background-color: #1d4ed8;
+        }
+    </style>
+</head>
+<body>
+    <form id="form-endereco">
+        <div class="campo">
+            <label for="cep">CEP:</label>
+            <input type="text" id="cep" maxlength="9" placeholder="00000-000" required>
+        </div>
+       
+        <div class="campo">
+            <label for="rua">Rua/Logradouro:</label>
+            <input type="text" id="rua" required>
+        </div>
+       
+        <!-- NOVO CAMPO: Bairro -->
+        <div class="campo">
+            <label for="bairro">Bairro:</label>
+            <input type="text" id="bairro" required>
+        </div>
+       
+        <div class="campo">
+            <label for="cidade">Cidade:</label>
+            <input type="text" id="cidade" required>
+        </div>
+       
+        <div class="campo">
+            <label for="estado">Estado (UF):</label>
+            <input type="text" id="estado" maxlength="2" placeholder="SP" required>
+        </div>
+
+        <button type="submit">Gravar Cadastro</button>
+    </form>
+
+    <script>
+        // Máscara automática para o CEP
+        document.getElementById('cep').addEventListener('input', function(e) {
+            let valor = e.target.value.replace(/\D/g, '');
+            if (valor.length > 5) {
+                valor = valor.substring(0, 5) + '-' + valor.substring(5, 8);
+            }
+            e.target.value = valor;
+        });
+
+        document.getElementById('cep').addEventListener('blur', function() {
+            let cep = this.value.replace(/\D/g, '');
+           
+            if (cep.length === 8) {
+                let url = `https://viacep.com.br/ws/${cep}/json/`;
+               
+                fetch(url)
+                    .then(response => response.json())
+                    .then(dados => {
+                        if (!dados.erro) {
+                            document.getElementById('rua').value = dados.logradouro;
+                            document.getElementById('bairro').value = dados.bairro;  // <-- NOVO
+                            document.getElementById('cidade').value = dados.localidade;
+                            document.getElementById('estado').value = dados.uf;
+                        } else {
+                            alert('CEP não encontrado.');
+                            limparFormulario();
+                        }
+                    })
+                    .catch(() => alert('Erro ao procurar o CEP. Tente novamente.'));
+            } else if (this.value !== '') {
+                alert('CEP inválido. Digite 8 números.');
+                limparFormulario();
+            }
+        });
+
+        function limparFormulario() {
+            document.getElementById('rua').value = '';
+            document.getElementById('bairro').value = '';  // <-- NOVO
+            document.getElementById('cidade').value = '';
+            document.getElementById('estado').value = '';
+        }
+    </script>
+</body>
+</html>
